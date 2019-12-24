@@ -1,31 +1,31 @@
-package com.tokoin.otp.util;
+package com.tokoin.otp.dto;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.SneakyThrows;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Random;
 
-@Slf4j
-public class DefaultOtpGenerator implements OtpGenerator {
+public class SMS {
 
     private static final String DEFAULT_ALGORITHM = "SHA1PRNG";
 
-    /**
-     * Generate Otp based on SHA1PRNG
-     * @return otp
-     */
-    @Override
-    public Integer generateOtp() {
-
+    public static Integer generateOtp() {
         int rand = 0;
         try {
             Random random = SecureRandom.getInstance(DEFAULT_ALGORITHM);
             rand =  random.nextInt(1000000);
         } catch (NoSuchAlgorithmException e) {
-            log.error("Invalid algorithm", e);
+            e.printStackTrace();
         }
+
         return rand;
+    }
+
+    public static void main(String[] args) {
+
+        System.out.println(generateOtp());
+
     }
 
 }
