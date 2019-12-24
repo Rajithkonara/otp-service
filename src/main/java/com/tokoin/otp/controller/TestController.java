@@ -83,7 +83,7 @@ public class TestController {
             log.error("OTP Validation failed " + e);
             ResponseWrapper responseWrapper =
                     new ResponseWrapper(ResponseStatusType.ERROR, INTERNAL_SERVER_ERROR, null);
-            return new ResponseEntity<>(responseWrapper, HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.badRequest().body(responseWrapper);
         }
 
     }
@@ -184,14 +184,7 @@ public class TestController {
         if (otpVerifyRequestDto.isRequiredMobileNo() && otpVerifyRequestDto.isRequiredOtp()) {
             if (validator.isValidMobileNo(otpVerifyRequestDto.getMobileNo())) {
                 //verify sms otp
-                boolean status = otpService.verifySmsOtp(otpVerifyRequestDto);
-                if (status) {
-                    ResponseWrapper responseWrapper =
-                            new ResponseWrapper(ResponseStatusType.SUCCESS, SUCCESSFULLY_SENT, null);
-                    return ResponseEntity.ok().body(responseWrapper);
-                } else {
-                    return internalServerError(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_CODE);
-                }
+                 return otpService.verifySsmOtp(otpVerifyRequestDto);
             } else {
                 return invalidRequestError(INVALID_MOBILE_NO, ERROR_CODE_INVALID_MOBILE);
             }
@@ -199,5 +192,26 @@ public class TestController {
             return invalidRequestError("Required Fields are missing ", ERROR_CODE_INVALID_MOBILE);
         }
     }
+
+//    private ResponseEntity<Object> smsVerifyResponseEntity(@RequestBody @Valid OtpVerifyRequestDto otpVerifyRequestDto) {
+//
+//        if (otpVerifyRequestDto.isRequiredMobileNo() && otpVerifyRequestDto.isRequiredOtp()) {
+//            if (validator.isValidMobileNo(otpVerifyRequestDto.getMobileNo())) {
+//                //verify sms otp
+//                boolean status = otpService.verifySmsOtp(otpVerifyRequestDto);
+//                if (status) {
+//                    ResponseWrapper responseWrapper =
+//                            new ResponseWrapper(ResponseStatusType.SUCCESS, SUCCESSFULLY_SENT, null);
+//                    return ResponseEntity.ok().body(responseWrapper);
+//                } else {
+//                    return internalServerError(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_CODE);
+//                }
+//            } else {
+//                return invalidRequestError(INVALID_MOBILE_NO, ERROR_CODE_INVALID_MOBILE);
+//            }
+//        } else {
+//            return invalidRequestError("Required Fields are missing ", ERROR_CODE_INVALID_MOBILE);
+//        }
+//    }
 
 }

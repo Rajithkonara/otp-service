@@ -2,6 +2,7 @@ package com.tokoin.otp.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.NumberFormat;
 
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;

@@ -2,9 +2,14 @@ package com.tokoin.otp.service;
 
 import com.tokoin.otp.dto.request.OtpRequestDto;
 import com.tokoin.otp.dto.request.OtpVerifyRequestDto;
+import com.tokoin.otp.enums.ResponseStatusType;
+import com.tokoin.otp.exception.OtpCacheException;
 import com.tokoin.otp.repository.OtpSMSCacheRepository;
+import com.tokoin.otp.wrapper.ErrorResponseWrapper;
+import com.tokoin.otp.wrapper.ResponseWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
@@ -58,10 +63,10 @@ public class OtpServiceImpl implements OtpService {
     @Override
     public boolean verifySmsOtp(OtpVerifyRequestDto otpVerifyRequestDto) {
 
-        Optional<String> mobileNo =  cacheRepository.get(otpVerifyRequestDto.getMobileNo());
+        Optional<String> cachedOtp = cacheRepository.get(otpVerifyRequestDto.getMobileNo());
 
-        if (mobileNo.isPresent() && mobileNo.get().equals(otpVerifyRequestDto.getOtp())) {
-            log.info("OTP found Removing the OTP {} ", mobileNo);
+        if (cachedOtp.isPresent() && cachedOtp.get().equals(otpVerifyRequestDto.getOtp())) {
+            log.info("OTP found Removing the OTP {} ", cachedOtp);
             cacheRepository.remove(otpVerifyRequestDto.getMobileNo());
             return true;
         } else {
@@ -71,12 +76,37 @@ public class OtpServiceImpl implements OtpService {
     }
 
     @Override
+    public ResponseEntity<Object> verifySsmOtp(OtpVerifyRequestDto otpVerifyRequestDto) {
+
+        Optional<String> cachedOtp = cacheRepository.get(otpVerifyRequestDto.getMobileNo());
+
+        if (cachedOtp.isPresent() && cachedOtp.get().equals(otpVerifyRequestDto.getOtp())) {
+            log.info("OTP found Removing the OTP {} ", cachedOtp);
+            cacheRepository.remove(otpVerifyRequestDto.getMobileNo());
+
+            ResponseWrapper responseWrapper =
+                    new ResponseWrapper(ResponseStatusType.SUCCESS, "SUCCESSFULLY_SENT", null);
+            return ResponseEntity.ok().body(responseWrapper);
+
+        } else if (cachedOtp.isPresent() && !cachedOtp.get().equals(otpVerifyRequestDto.getOtp())) {
+            ErrorResponseWrapper errorResponseWrapper = new ErrorResponseWrapper("4001",
+                    ResponseStatusType.ERROR, "Otp expired", null);
+            return ResponseEntity.badRequest().body(errorResponseWrapper);
+        } else {
+            ErrorResponseWrapper errorResponseWrapper = new ErrorResponseWrapper("4002",
+                    ResponseStatusType.ERROR, "Invalid OTP", null);
+            return ResponseEntity.badRequest().body(errorResponseWrapper);
+        }
+
+    }
+
+    @Override
     public boolean verifyEmailOtp(OtpVerifyRequestDto otpVerifyRequestDto) {
 
-        Optional<String> email = cacheRepository.get(otpVerifyRequestDto.getEmail());
+        Optional<String> cachedOtp = cacheRepository.get(otpVerifyRequestDto.getEmail());
 
-        if (email.isPresent() && email.get().equals(otpVerifyRequestDto.getOtp())) {
-            log.info("OTP found Removing the OTP {} ", email);
+        if (cachedOtp.isPresent() && cachedOtp.get().equals(otpVerifyRequestDto.getOtp())) {
+            log.info("OTP found Removing the OTP {} ", cachedOtp);
             cacheRepository.remove(otpVerifyRequestDto.getEmail());
             return true;
         } else {

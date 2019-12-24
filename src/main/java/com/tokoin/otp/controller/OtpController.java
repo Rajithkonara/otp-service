@@ -2,10 +2,11 @@ package com.tokoin.otp.controller;
 
 import com.tokoin.otp.dto.request.OtpRequestDto;
 import com.tokoin.otp.dto.request.OtpVerifyRequestDto;
-import com.tokoin.otp.enums.ResponseStatusType;
-import com.tokoin.otp.repository.OtpSMSCacheRepository;
+import com.tokoin.otp.exception.OtpCacheException;
 import com.tokoin.otp.service.OtpService;
+import com.tokoin.otp.service.OtpServiceV2;
 import com.tokoin.otp.wrapper.ResponseWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,57 +14,42 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/otp")
 public class OtpController {
 
-    private OtpService otpService;
+    private static final String TYPE_MOBILE = "mobile";
+    private static final String TYPE_EMAIL = "email";
+
+    private OtpServiceV2 otpService;
 
     @Autowired
-    private OtpSMSCacheRepository repository;
-
-    @Autowired
-    public OtpController(OtpService otpService) {
+    public OtpController(OtpServiceV2 otpService) {
         this.otpService = otpService;
     }
 
     @PostMapping("/generate")
     public ResponseEntity<ResponseWrapper> generateOtp(@RequestBody OtpRequestDto otpRequestDto) {
 
-        //check the type
-        if (otpRequestDto.getType().equals("mobile")) {
-
-            // call the generate otp
-            int integer = otpService.generateSMSOtp();
-            System.out.println(integer);
-            repository.put(otpRequestDto.getMobileNo(), integer);
-
-//            Integer integer1 = repository.get(otpRequestDto.getMobileNo());
-////
-//            System.out.println(integer1);
-            //save key value in redis cache
-
-        }
-
-
-        ResponseWrapper responseWrapper =
-                new ResponseWrapper(ResponseStatusType.SUCCESS, "SUCCESSFULLY_SENT", null);
-
-        return ResponseEntity.ok().body(responseWrapper);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/verify")
     public ResponseEntity<ResponseWrapper> verifyOtp(@RequestBody OtpVerifyRequestDto otpVerifyRequestDto) {
 
-//        Integer msisdn = repository.get(otpVerifyRequestDto.getMobileNo());
-//
-//        if (msisdn.toString().equals(otpVerifyRequestDto.getOtp())) {
-//            System.out.println("equals.....");
-//        }
-//
-//        ResponseWrapper responseWrapper =
-//                new ResponseWrapper(ResponseStatusType.SUCCESS, "OTP : "+ msisdn, null);
+        try {
 
+            if (otpVerifyRequestDto.getType().equals(TYPE_MOBILE)) {
+                otpService.verifySmsOtp(otpVerifyRequestDto);
+            } else if (otpVerifyRequestDto.getType().equals(TYPE_EMAIL)) {
+
+            }
+
+        } catch (OtpCacheException e) {
+            log.error("Error occurred while verifying the OTP  {}" ,
+                    e);
+        }
         return ResponseEntity.ok().build();
     }
 
