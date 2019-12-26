@@ -1,5 +1,6 @@
 package com.tokoin.otp.repository;
 
+import com.tokoin.otp.exception.OtpCacheException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Repository;
@@ -10,55 +11,60 @@ import java.util.concurrent.TimeUnit;
 @Repository
 public class OtpSMSCacheRepositoryImpl implements OtpSMSCacheRepository {
 
-//    private RedisTemplate<String, String>  redisTemplate;
-
     private StringRedisTemplate redisTemplate;
+    private ValueOperations<String, String> valueOps;
 
-//   @Autowired
-//    private Jedis jedis;
-
-    private static final String KEY = "Mobile";
-
-//    private HashOperations hashOperations;
-
-    ValueOperations<String, String> valueOps;
-
-
-    //    private Jedis jedis;
-//
     @Autowired
     public OtpSMSCacheRepositoryImpl(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
-//        hashOperations = redisTemplate.opsForHash();
         valueOps = redisTemplate.opsForValue();
     }
 
+    /**
+     * Save the key value pair in cache
+     * @param key cache key
+     * @param value cache value
+     */
     @Override
     public void put(String key, Integer value) {
-//        hashOperations.put(key, KEY, value);
-        valueOps.set(key, String.valueOf(value));
-//        jedis.set(key, String.valueOf(value));
-//        jedis.expire(key, 20);
-         redisTemplate.expire(key, 300, TimeUnit.SECONDS);
+        try {
+            valueOps.set(key, String.valueOf(value));
+            redisTemplate.expire(key, 300, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            throw new OtpCacheException("Error while saving to cache "+ e);
+        }
     }
 
+    /**
+     * Returns the cached value
+     * @param key cached key
+     * @return cached value
+     */
     @Override
     public Optional<String> get(String key) {
-//        return (Integer) hashOperations.get(key, KEY);
-
-        Boolean b = redisTemplate.hasKey(key);
-        if (Boolean.TRUE.equals(b)) {
-            return Optional.ofNullable(valueOps.get(key));
-        } else {
-            return Optional.empty();
+        try {
+            Boolean b = redisTemplate.hasKey(key);
+            if (Boolean.TRUE.equals(b)) {
+                return Optional.ofNullable(valueOps.get(key));
+            } else {
+                return Optional.empty();
+            }
+        } catch (Exception e) {
+            throw new OtpCacheException("Error while retrieving from the cache ", e);
         }
-
-//        return Integer.valueOf(jedis.get(key));
     }
 
+    /**
+     * Remove the cached value
+     * @param key cached key
+     */
     @Override
     public void remove(String key) {
-        redisTemplate.delete(key);
+        try {
+            redisTemplate.delete(key);
+        } catch (Exception e) {
+            throw new OtpCacheException("Error while removing from the cache ", e);
+        }
     }
 
 }

@@ -1,11 +1,14 @@
 package com.tokoin.otp.dto;
 
-import lombok.SneakyThrows;
-
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Random;
 
+/**
+ * @deprecated  remove after testing completed
+ *
+ */
+@Deprecated(forRemoval = true)
 public class SMS {
 
     private static final String DEFAULT_ALGORITHM = "SHA1PRNG";
@@ -14,9 +17,10 @@ public class SMS {
         int rand = 0;
         try {
             Random random = SecureRandom.getInstance(DEFAULT_ALGORITHM);
-            rand =  random.nextInt(1000000);
+            rand = 100000 + random.nextInt(900000);
+            // 100000 <= n <= 999999
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            System.out.println(e);
         }
 
         return rand;
@@ -24,7 +28,11 @@ public class SMS {
 
     public static void main(String[] args) {
 
-        System.out.println(generateOtp());
+        for (int i = 0; i < 200; i++) {
+           Integer  x  =generateOtp();
+            System.out.println(String.valueOf(x).length());
+        }
+
 
     }
 

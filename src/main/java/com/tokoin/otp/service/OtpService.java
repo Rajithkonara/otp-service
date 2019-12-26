@@ -8,14 +8,12 @@ public interface OtpService {
 
     int generateSMSOtp();
 
-    OtpRequestDto sendOtpSms(OtpRequestDto otpRequestDto);
+    ResponseEntity<Object> sendOtpSms(OtpRequestDto otpRequestDto);
 
-    OtpRequestDto sendEmailOtp(OtpRequestDto otpRequestDto);
+    ResponseEntity<Object> sendEmailOtp(OtpRequestDto otpRequestDto);
 
-    boolean verifySmsOtp(OtpVerifyRequestDto otpVerifyRequestDto);
+    ResponseEntity<Object> verifySmsOtp(OtpVerifyRequestDto otpVerifyRequestDto);
 
-    ResponseEntity<Object> verifySsmOtp(OtpVerifyRequestDto otpVerifyRequestDto);
-
-    boolean verifyEmailOtp(OtpVerifyRequestDto otpVerifyRequestDto);
+    ResponseEntity<Object> verifyEmailOtp(OtpVerifyRequestDto otpVerifyRequestDto);
 
 }

@@ -18,8 +18,8 @@ import javax.validation.Valid;
 
 @RestController
 @Slf4j
-@RequestMapping("/api/v2/otp")
-public class TestController {
+@RequestMapping("/api/v1/otp")
+public class OtpController {
 
     private static final String INVALID_MOBILE_NO = "Invalid mobile number provided";
     private static final String INVALID_EMAIL = "Invalid email provided";
@@ -30,14 +30,12 @@ public class TestController {
     private static final String TYPE_EMAIL = "email";
     public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
     private static final String INVALID_TYPE = "Invalid type provided";
-    public static final String SUCCESSFULLY_SENT = "SUCCESSFULLY_SENT";
-    public static final String INTERNAL_SERVER_ERROR_CODE = "50001";
 
     private OtpService otpService;
     private final Validator validator;
 
     @Autowired
-    public TestController(OtpService otpService, Validator validator) {
+    public OtpController(OtpService otpService, Validator validator) {
         this.otpService = otpService;
         this.validator = validator;
     }
@@ -47,7 +45,6 @@ public class TestController {
 
         try {
             if (otpRequestDto.getType().equals(TYPE_MOBILE)) {
-                log.debug("debug log ");
                 return generateSmsResponseEntity(otpRequestDto);
             } else if (otpRequestDto.getType().equals(TYPE_EMAIL)) {
                 return generateEmailResponseEntity(otpRequestDto);
@@ -89,7 +86,8 @@ public class TestController {
     }
 
     /**
-     * Save the email and otp to cache and send send email service
+     * Save the email and otp to cache and send email
+     *
      * @param otpRequestDto otp request parameters
      * @return ResponseEntity
      */
@@ -97,15 +95,7 @@ public class TestController {
         if (otpRequestDto.isRequiredEmail()) {
             if (validator.isValidEmail(otpRequestDto.getEmail())) {
                 //generate otp and save to cache
-                OtpRequestDto requestDto = otpService.sendEmailOtp(otpRequestDto);
-                //Todo: Wrong check here
-                if (requestDto != null) {
-                    ResponseWrapper responseWrapper =
-                            new ResponseWrapper(ResponseStatusType.SUCCESS, SUCCESSFULLY_SENT, null);
-                    return ResponseEntity.ok().body(responseWrapper);
-                } else {
-                    return internalServerError(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_CODE);
-                }
+               return otpService.sendEmailOtp(otpRequestDto);
             } else {
                 return invalidRequestError(INVALID_EMAIL, ERROR_CODE_INVALID_MOBILE);
             }
@@ -114,20 +104,16 @@ public class TestController {
         }
     }
 
+    /**
+     * Save the mobileNo to cache and send sms
+     * @param otpRequestDto otp request parameters
+     * @return ResponseEntity
+     */
     private ResponseEntity<Object> generateSmsResponseEntity(@RequestBody @Valid OtpRequestDto otpRequestDto) {
         if (otpRequestDto.isRequiredMobileNo()) {
             if (validator.isValidMobileNo(otpRequestDto.getMobileNo())) {
                 //generate otp and save to cache
-                OtpRequestDto requestDto = otpService.sendOtpSms(otpRequestDto);
-                //Todo: invalid check here
-                if (requestDto != null) {
-                    ResponseWrapper responseWrapper =
-                            new ResponseWrapper(ResponseStatusType.SUCCESS, SUCCESSFULLY_SENT, null);
-                    return ResponseEntity.ok().body(responseWrapper);
-                } else {
-                    return internalServerError(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_CODE);
-                }
-
+                return otpService.sendOtpSms(otpRequestDto);
             } else {
                 return invalidRequestError(INVALID_MOBILE_NO, ERROR_CODE_INVALID_MOBILE);
             }
@@ -136,18 +122,13 @@ public class TestController {
         }
     }
 
-    private ResponseEntity<Object> internalServerError(String errorMsg, String errorCode) {
-        ErrorResponseWrapper errorResponseWrapper = new ErrorResponseWrapper(errorCode,
-                ResponseStatusType.ERROR, errorMsg, null);
-        return new ResponseEntity<>(errorResponseWrapper, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
 
     /**
      * Return the error response for invalid request
      *
-     * @param errorMsg
-     * @param errorCode
-     * @return
+     * @param errorMsg error message
+     * @param errorCode error code
+     * @return errorResponseWrapper
      */
     private ResponseEntity<Object> invalidRequestError(String errorMsg, String errorCode) {
         ErrorResponseWrapper errorResponseWrapper = new ErrorResponseWrapper(errorCode,
@@ -155,22 +136,17 @@ public class TestController {
         return ResponseEntity.badRequest().body(errorResponseWrapper);
     }
 
-
-    private ResponseEntity<Object> emailVerifyResponseEntity(@RequestBody @Valid OtpVerifyRequestDto otpVerifyRequestDto) {
+    /**
+     * Read the cache and get the saved otp for email
+     * @param otpVerifyRequestDto otpVerifyRequestDto
+     * @return ResponseEntity
+     */
+    private ResponseEntity<Object> emailVerifyResponseEntity(@RequestBody @Valid
+                                                                     OtpVerifyRequestDto otpVerifyRequestDto) {
 
         if (otpVerifyRequestDto.isRequiredEmail()) {
             if (validator.isValidEmail(otpVerifyRequestDto.getEmail())) {
-
-                boolean status = otpService.verifyEmailOtp(otpVerifyRequestDto);
-
-                if (status) {
-                    ResponseWrapper responseWrapper =
-                            new ResponseWrapper(ResponseStatusType.SUCCESS, SUCCESSFULLY_SENT, null);
-                    return ResponseEntity.ok().body(responseWrapper);
-                } else {
-                    return internalServerError(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_CODE);
-                }
-
+                return otpService.verifyEmailOtp(otpVerifyRequestDto);
             } else {
                 return invalidRequestError(INVALID_EMAIL, ERROR_CODE_INVALID_MOBILE);
             }
@@ -179,12 +155,18 @@ public class TestController {
         }
     }
 
-    private ResponseEntity<Object> smsVerifyResponseEntity(@RequestBody @Valid OtpVerifyRequestDto otpVerifyRequestDto) {
+    /**
+     * Read the cache and get the saved otp for sms
+     * @param otpVerifyRequestDto otpVerifyRequestDto
+     * @return ResponseEntity
+     */
+    private ResponseEntity<Object> smsVerifyResponseEntity(@RequestBody @Valid
+                                                                   OtpVerifyRequestDto otpVerifyRequestDto) {
 
         if (otpVerifyRequestDto.isRequiredMobileNo()) {
             if (validator.isValidMobileNo(otpVerifyRequestDto.getMobileNo())) {
                 //verify sms otp
-                 return otpService.verifySsmOtp(otpVerifyRequestDto);
+                return otpService.verifySmsOtp(otpVerifyRequestDto);
             } else {
                 return invalidRequestError(INVALID_MOBILE_NO, ERROR_CODE_INVALID_MOBILE);
             }
@@ -192,26 +174,5 @@ public class TestController {
             return invalidRequestError("Required Fields are missing ", ERROR_CODE_INVALID_MOBILE);
         }
     }
-
-//    private ResponseEntity<Object> smsVerifyResponseEntity(@RequestBody @Valid OtpVerifyRequestDto otpVerifyRequestDto) {
-//
-//        if (otpVerifyRequestDto.isRequiredMobileNo() && otpVerifyRequestDto.isRequiredOtp()) {
-//            if (validator.isValidMobileNo(otpVerifyRequestDto.getMobileNo())) {
-//                //verify sms otp
-//                boolean status = otpService.verifySmsOtp(otpVerifyRequestDto);
-//                if (status) {
-//                    ResponseWrapper responseWrapper =
-//                            new ResponseWrapper(ResponseStatusType.SUCCESS, SUCCESSFULLY_SENT, null);
-//                    return ResponseEntity.ok().body(responseWrapper);
-//                } else {
-//                    return internalServerError(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_CODE);
-//                }
-//            } else {
-//                return invalidRequestError(INVALID_MOBILE_NO, ERROR_CODE_INVALID_MOBILE);
-//            }
-//        } else {
-//            return invalidRequestError("Required Fields are missing ", ERROR_CODE_INVALID_MOBILE);
-//        }
-//    }
 
 }

@@ -2,9 +2,9 @@ package com.tokoin.otp.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.format.annotation.NumberFormat;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
 @Getter @Setter
@@ -15,6 +15,7 @@ public class OtpVerifyRequestDto implements Serializable {
     private String mobileNo;
     private String email;
     @NotBlank(message = "OTP cannot be Null")
+    @Pattern(regexp="^([0-9]{6})$", message = "Invalid otp provided")
     private String otp;
 
     public boolean isRequiredMobileNo() {
@@ -22,10 +23,6 @@ public class OtpVerifyRequestDto implements Serializable {
     }
 
     public boolean isRequiredEmail() { return isNonEmpty(email); }
-
-    public boolean isRequiredOtp() {
-        return isNonEmpty(otp);
-    }
 
     protected boolean isNonEmpty(String field) {
         return field != null && !field.trim().isEmpty();
