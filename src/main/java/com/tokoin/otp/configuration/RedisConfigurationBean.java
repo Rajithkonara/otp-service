@@ -4,24 +4,20 @@ import io.lettuce.core.ClientOptions;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.resource.DefaultClientResources;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 
 @Configuration
 @Slf4j
-@ComponentScan("com.tokoin")
 public class RedisConfigurationBean {
 
     @Value("${spring.redis.host}")
@@ -57,18 +53,8 @@ public class RedisConfigurationBean {
     }
 
     @Bean
-    LettucePoolingClientConfiguration lettucePoolConfig(ClientOptions options, ClientResources dcr){
-        return LettucePoolingClientConfiguration.builder()
-                .poolConfig(new GenericObjectPoolConfig())
-                .clientOptions(options)
-                .clientResources(dcr)
-                .build();
-    }
-
-    @Bean
-    public RedisConnectionFactory connectionFactory(RedisStandaloneConfiguration redisStandaloneConfiguration,
-                                                    LettucePoolingClientConfiguration lettucePoolConfig) {
-        return new LettuceConnectionFactory(redisStandaloneConfiguration, lettucePoolConfig);
+    public RedisConnectionFactory connectionFactory(RedisStandaloneConfiguration redisStandaloneConfiguration) {
+        return new LettuceConnectionFactory(redisStandaloneConfiguration);
     }
 
     @Bean
