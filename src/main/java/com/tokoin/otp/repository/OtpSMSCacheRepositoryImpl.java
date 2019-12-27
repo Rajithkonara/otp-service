@@ -2,6 +2,7 @@ package com.tokoin.otp.repository;
 
 import com.tokoin.otp.exception.OtpCacheException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +12,8 @@ import java.util.concurrent.TimeUnit;
 @Repository
 public class OtpSMSCacheRepositoryImpl implements OtpSMSCacheRepository {
 
+    @Value("${spring.cache.redis.time-to-live}")
+    private long ttl;
     private StringRedisTemplate redisTemplate;
     private ValueOperations<String, String> valueOps;
 
@@ -21,7 +24,7 @@ public class OtpSMSCacheRepositoryImpl implements OtpSMSCacheRepository {
     }
 
     /**
-     * Save the key value pair in cache
+     * Save the key value pair in cache with a ttl
      * @param key cache key
      * @param value cache value
      */
@@ -29,7 +32,7 @@ public class OtpSMSCacheRepositoryImpl implements OtpSMSCacheRepository {
     public void put(String key, Integer value) {
         try {
             valueOps.set(key, String.valueOf(value));
-            redisTemplate.expire(key, 300, TimeUnit.SECONDS);
+            redisTemplate.expire(key, ttl, TimeUnit.SECONDS);
         } catch (Exception e) {
             throw new OtpCacheException("Error while saving to cache "+ e);
         }
