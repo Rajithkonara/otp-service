@@ -41,7 +41,8 @@ public class OtpController {
     }
 
     @PostMapping("/generate")
-    public ResponseEntity<Object> generateOtp(@Valid @RequestBody OtpRequestDto otpRequestDto) {
+    public ResponseEntity<Object> generateOtp(
+            @Valid @RequestBody OtpRequestDto otpRequestDto, @RequestHeader(value = "app-key") String appKey) {
 
         try {
             if (otpRequestDto.getType().equals(TYPE_MOBILE)) {
@@ -64,7 +65,8 @@ public class OtpController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<Object> verifyOtp(@Valid @RequestBody OtpVerifyRequestDto otpVerifyRequestDto) {
+    public ResponseEntity<Object> verifyOtp(@Valid @RequestBody OtpVerifyRequestDto otpVerifyRequestDto,
+                                            @RequestHeader(value = "app-key") String appKey) {
 
         try {
             if (otpVerifyRequestDto.getType().equals(TYPE_MOBILE)) {
@@ -95,7 +97,7 @@ public class OtpController {
         if (otpRequestDto.isRequiredEmail()) {
             if (validator.isValidEmail(otpRequestDto.getEmail())) {
                 //generate otp and save to cache
-               return otpService.sendEmailOtp(otpRequestDto);
+                return otpService.sendEmailOtp(otpRequestDto);
             } else {
                 return invalidRequestError(INVALID_EMAIL, ERROR_CODE_INVALID_MOBILE);
             }
@@ -106,6 +108,7 @@ public class OtpController {
 
     /**
      * Save the mobileNo to cache and send sms
+     *
      * @param otpRequestDto otp request parameters
      * @return ResponseEntity
      */
@@ -126,7 +129,7 @@ public class OtpController {
     /**
      * Return the error response for invalid request
      *
-     * @param errorMsg error message
+     * @param errorMsg  error message
      * @param errorCode error code
      * @return errorResponseWrapper
      */
@@ -138,6 +141,7 @@ public class OtpController {
 
     /**
      * Read the cache and get the saved otp for email
+     *
      * @param otpVerifyRequestDto otpVerifyRequestDto
      * @return ResponseEntity
      */
@@ -157,6 +161,7 @@ public class OtpController {
 
     /**
      * Read the cache and get the saved otp for sms
+     *
      * @param otpVerifyRequestDto otpVerifyRequestDto
      * @return ResponseEntity
      */
