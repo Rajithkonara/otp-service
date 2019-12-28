@@ -3,6 +3,7 @@ package com.tokoin.otp.service;
 import com.tokoin.otp.dto.request.OtpRequestDto;
 import com.tokoin.otp.dto.request.OtpVerifyRequestDto;
 import com.tokoin.otp.enums.ResponseStatusType;
+import com.tokoin.otp.exception.OtpGeneratorException;
 import com.tokoin.otp.repository.OtpSMSCacheRepository;
 import com.tokoin.otp.wrapper.ErrorResponseWrapper;
 import com.tokoin.otp.wrapper.ResponseWrapper;
@@ -34,7 +35,7 @@ public class OtpServiceImpl implements OtpService {
 
     //should this be synchronous ?
     @Override
-    public int generateSMSOtp() {
+    public int generateOtp() {
         int rand = 0;
         try {
             Random random = SecureRandom.getInstance(DEFAULT_ALGORITHM);
@@ -42,14 +43,14 @@ public class OtpServiceImpl implements OtpService {
             // 100000 <= n <= 999999
         } catch (NoSuchAlgorithmException e) {
             log.error("Invalid algorithm", e);
-            //throw a custom exception here
+            throw new OtpGeneratorException("Failed to generate Otp ", e);
         }
         return rand;
     }
 
     @Override
     public ResponseEntity<Object> sendOtpSms(OtpRequestDto otpRequestDto) {
-        int otp = generateSMSOtp();
+        int otp = generateOtp();
         log.info("Otp ---> {}", otp);
         cacheRepository.put(otpRequestDto.getMobileNo(), otp);
 
@@ -63,7 +64,7 @@ public class OtpServiceImpl implements OtpService {
 
     @Override
     public ResponseEntity<Object> sendEmailOtp(OtpRequestDto otpRequestDto) {
-        int otp = generateSMSOtp();
+        int otp = generateOtp();
         log.info("Otp ---> {}", otp);
         cacheRepository.put(otpRequestDto.getEmail(), otp);
 

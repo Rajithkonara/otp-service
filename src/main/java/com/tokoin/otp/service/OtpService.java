@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 
 public interface OtpService {
 
-    int generateSMSOtp();
+    int generateOtp();
 
     ResponseEntity<Object> sendOtpSms(OtpRequestDto otpRequestDto);
 
