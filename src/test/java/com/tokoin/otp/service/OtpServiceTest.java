@@ -37,8 +37,16 @@ public class OtpServiceTest {
 
     @Test
     void Should_Generate_Otp() {
-        Integer otp = otpService.generateOtp();
-        assertNotNull(otp);
+
+        int otp = otpService.generateOtp();
+        int count = 0;
+
+        while (otp != 0) {
+            otp /= 10;
+            ++count;
+        }
+        assertEquals(6, count);
+
     }
 
     @Test
@@ -69,7 +77,6 @@ public class OtpServiceTest {
     @Test
     void Should_ThrowException_When_DeleteOtpToCacheFailed() {
 
-        //use the enums
         doThrow(new OtpCacheException("Error while removing from the cache ")).when(otpSMSCacheRepository).
                 remove("key");
 
