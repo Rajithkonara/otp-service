@@ -10,10 +10,13 @@ import com.tokoin.otp.wrapper.ErrorResponseWrapper;
 import com.tokoin.otp.wrapper.ResponseWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.extern.slf4j.Slf4j;
+
+import javax.print.attribute.standard.Media;
 import javax.validation.Valid;
 
 @RestController
@@ -30,6 +33,7 @@ public class OtpController {
     private static final String TYPE_EMAIL = "email";
     public static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
     private static final String INVALID_TYPE = "Invalid type provided";
+    private static final String APPLICATION_JSON = "application/json";
 
     private OtpService otpService;
     private final Validator validator;
@@ -40,7 +44,8 @@ public class OtpController {
         this.validator = validator;
     }
 
-    @PostMapping("/generate")
+    @PostMapping(value = "/generate", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> generateOtp(
             @Valid @RequestBody OtpRequestDto otpRequestDto, @RequestHeader(value = "app-key") String appKey) {
 
@@ -64,7 +69,7 @@ public class OtpController {
 
     }
 
-    @PostMapping("/verify")
+    @PostMapping(value = "/verify", consumes = APPLICATION_JSON, produces = APPLICATION_JSON)
     public ResponseEntity<Object> verifyOtp(@Valid @RequestBody OtpVerifyRequestDto otpVerifyRequestDto,
                                             @RequestHeader(value = "app-key") String appKey) {
 
