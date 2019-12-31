@@ -25,7 +25,7 @@ eg: requirepass yourpassword
 ## Start Redis-Server
 ```
 Goto redis installation directory and cd src 
-./redis-server
+./redis-server ../redis.conf
 ```
 
 ##Using the Redis-Cli
