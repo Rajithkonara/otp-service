@@ -14,11 +14,49 @@ tar xzf redis-5.0.7.tar.gz
 cd redis-5.0.7
 make
 ```
+## Configuring Redis
+* Adding password protecting
+* Go to <redis-installation-dir>
+* Edit redis.conf, uncomment requirepass 
+```
+eg: requirepass yourpassword
+```
+
 ## Start Redis-Server
 ```
-Goto redis installation directory 
+Goto redis installation directory and cd src 
 ./redis-server
 ```
+
+##Using the Redis-Cli
+To view the data in redis cache we can you the redis-cli tool
+
+* Go to redis installation directory <redis-installation-dir> 
+* cd <redis-installation-dir>/src
+* run ./redis-cli
+* Authenticate by typing 
+```
+AUTH your password
+```
+##Using Redis commands
+* In the redis cli you can type redis commands
+* To get keys 
+```
+keys * 
+```
+* Get value of a key
+```
+get keyName
+```
+* View ttl
+```
+ttl keyName
+```
+
+Refer [https://redis.io/commands]
+
+##Configuring the micro-service
+* Add the password to redis server in <otp-service>/src/main/resources/application.properties
 ## Dependencies
 All dependencies are available in pom.xml.
 
